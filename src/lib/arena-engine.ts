@@ -6,9 +6,13 @@ interface ArenaState {
     hero: {
         x: number;
         y: number;
+        vx: number;
+        vy: number;
         hp: number;
         maxHp: number;
         angle: number;
+        dashCooldown: number;
+        invulnerable: number;
     };
     boss: {
         x: number;
@@ -17,6 +21,7 @@ interface ArenaState {
         maxHp: number;
         phase: number;
         color: string;
+        shake: number;
     };
     projectiles: {
         id: number;
@@ -37,6 +42,14 @@ interface ArenaState {
         life: number;
         color: string;
     }[];
+    damageNumbers: {
+        x: number;
+        y: number;
+        value: number;
+        life: number;
+        color: string;
+    }[];
+    screenShake: number;
     status: "playing" | "victory" | "defeat";
 }
 
@@ -50,16 +63,18 @@ export function useArenaEngine(
 
     // We use refs for the game loop state to avoid React re-renders slowing down 60fps loop
     const stateRef = useRef<ArenaState>({
-        hero: { x: 400, y: 500, hp: 100, maxHp: 100, angle: 0 },
-        boss: { x: 400, y: 100, hp: 1000, maxHp: 1000, phase: 1, color: "#ef4444" },
+        hero: { x: 400, y: 500, vx: 0, vy: 0, hp: 100, maxHp: 100, angle: 0, dashCooldown: 0, invulnerable: 0 },
+        boss: { x: 400, y: 100, hp: 1000, maxHp: 1000, phase: 1, color: "#ef4444", shake: 0 },
         projectiles: [],
         particles: [],
+        damageNumbers: [],
+        screenShake: 0,
         status: "playing"
     });
 
     const inputRef = useRef({
         w: false, a: false, s: false, d: false,
-        space: false, click: false,
+        space: false, click: false, shift: false,
         mouseX: 0, mouseY: 0
     });
 
@@ -73,10 +88,12 @@ export function useArenaEngine(
         const startHp = isRpg ? 100 + (rpg?.magic || 0) : 100 + (shooter?.shield || 0);
 
         stateRef.current = {
-            hero: { x: 400, y: 500, hp: startHp, maxHp: startHp, angle: 0 },
-            boss: { x: 400, y: 150, hp: 1000, maxHp: 1000, phase: 1, color: isRpg ? "#7f1d1d" : "#ef4444" },
+            hero: { x: 400, y: 500, vx: 0, vy: 0, hp: startHp, maxHp: startHp, angle: 0, dashCooldown: 0, invulnerable: 0 },
+            boss: { x: 400, y: 150, hp: 1000, maxHp: 1000, phase: 1, color: isRpg ? "#7f1d1d" : "#ef4444", shake: 0 },
             projectiles: [],
             particles: [],
+            damageNumbers: [],
+            screenShake: 0,
             status: "playing"
         };
         setGameState("playing");
@@ -93,6 +110,7 @@ export function useArenaEngine(
             if (key === "s") inputRef.current.s = true;
             if (key === "d") inputRef.current.d = true;
             if (key === " ") inputRef.current.space = true;
+            if (key === "shift") inputRef.current.shift = true;
         };
         const onKeyUp = (e: KeyboardEvent) => {
             const key = e.key.toLowerCase();
@@ -101,6 +119,7 @@ export function useArenaEngine(
             if (key === "s") inputRef.current.s = false;
             if (key === "d") inputRef.current.d = false;
             if (key === " ") inputRef.current.space = false;
+            if (key === "shift") inputRef.current.shift = false;
         };
         const onMouseMove = (e: MouseEvent) => {
             if (!canvasRef.current) return;
@@ -163,24 +182,49 @@ export function useArenaEngine(
 
             // --- UPDATE IS HERE ---
 
-            // 1. Hero Movement
-            const speed = 300;
-            let dx = 0;
-            let dy = 0;
-            if (inputRef.current.w) dy -= 1;
-            if (inputRef.current.s) dy += 1;
-            if (inputRef.current.a) dx -= 1;
-            if (inputRef.current.d) dx += 1;
+            // 1. Hero Movement (with Acceleration & Friction)
+            const accel = 2000;
+            const friction = 12;
+            let ax = 0;
+            let ay = 0;
+            if (inputRef.current.w) ay -= 1;
+            if (inputRef.current.s) ay += 1;
+            if (inputRef.current.a) ax -= 1;
+            if (inputRef.current.d) ax += 1;
 
-            if (dx !== 0 || dy !== 0) {
-                const len = Math.sqrt(dx * dx + dy * dy);
-                state.hero.x += (dx / len) * speed * dt;
-                state.hero.y += (dy / len) * speed * dt;
+            if (ax !== 0 || ay !== 0) {
+                const len = Math.sqrt(ax * ax + ay * ay);
+                state.hero.vx += (ax / len) * accel * dt;
+                state.hero.vy += (ay / len) * accel * dt;
             }
+
+            // Apply friction
+            state.hero.vx *= (1 - friction * dt);
+            state.hero.vy *= (1 - friction * dt);
+
+            // Dodge Roll
+            if (state.hero.dashCooldown > 0) state.hero.dashCooldown -= dt;
+            if (state.hero.invulnerable > 0) state.hero.invulnerable -= dt;
+
+            if (inputRef.current.shift && state.hero.dashCooldown <= 0 && (ax !== 0 || ay !== 0)) {
+                const len = Math.sqrt(ax * ax + ay * ay);
+                state.hero.vx = (ax / len) * 1200;
+                state.hero.vy = (ay / len) * 1200;
+                state.hero.dashCooldown = 0.8;
+                state.hero.invulnerable = 0.3;
+                spawnParticles(state, state.hero.x, state.hero.y, "#fff", 10);
+            }
+
+            // Update position
+            state.hero.x += state.hero.vx * dt;
+            state.hero.y += state.hero.vy * dt;
 
             // Clamp Hero
             state.hero.x = Math.max(20, Math.min(canvas.width - 20, state.hero.x));
             state.hero.y = Math.max(20, Math.min(canvas.height - 20, state.hero.y));
+
+            if (state.hero.x <= 20 || state.hero.x >= canvas.width - 20) state.hero.vx = 0;
+            if (state.hero.y <= 20 || state.hero.y >= canvas.height - 20) state.hero.vy = 0;
 
             // Hero Angle (aim at mouse)
             state.hero.angle = Math.atan2(
@@ -303,7 +347,16 @@ export function useArenaEngine(
                     const d = Math.sqrt((p.x - state.boss.x) ** 2 + (p.y - state.boss.y) ** 2);
                     if (d < 50) { // Boss radius approx
                         state.boss.hp -= p.damage;
-                        spawnParticles(state, p.x, p.y, p.color, 5);
+                        state.boss.shake = 10;
+                        state.screenShake = 3;
+                        spawnParticles(state, p.x, p.y, p.color, 8);
+                        state.damageNumbers.push({
+                            x: state.boss.x + (Math.random() - 0.5) * 40,
+                            y: state.boss.y - 20,
+                            value: Math.round(p.damage),
+                            life: 1.0,
+                            color: "#fff"
+                        });
                         state.projectiles.splice(i, 1);
                         if (state.boss.hp <= 0) {
                             state.status = "victory";
@@ -313,9 +366,17 @@ export function useArenaEngine(
                 } else {
                     // Hit Hero?
                     const d = Math.sqrt((p.x - state.hero.x) ** 2 + (p.y - state.hero.y) ** 2);
-                    if (d < 20) { // Hero radius approx
+                    if (d < 20 && state.hero.invulnerable <= 0) { // Hero radius approx
                         state.hero.hp -= p.damage;
-                        spawnParticles(state, p.x, p.y, "#ff0000", 5);
+                        state.screenShake = 10;
+                        spawnParticles(state, p.x, p.y, "#ff0000", 10);
+                        state.damageNumbers.push({
+                            x: state.hero.x,
+                            y: state.hero.y - 20,
+                            value: Math.round(p.damage),
+                            life: 1.0,
+                            color: "#ff4444"
+                        });
                         state.projectiles.splice(i, 1);
                         if (state.hero.hp <= 0) {
                             state.status = "defeat";
@@ -333,6 +394,18 @@ export function useArenaEngine(
                 p.life -= dt * 2;
                 if (p.life <= 0) state.particles.splice(i, 1);
             }
+
+            // 6. Damage Numbers
+            for (let i = state.damageNumbers.length - 1; i >= 0; i--) {
+                const dn = state.damageNumbers[i];
+                dn.y -= 40 * dt; // Float up
+                dn.life -= dt * 1.5;
+                if (dn.life <= 0) state.damageNumbers.splice(i, 1);
+            }
+
+            // 7. Screen Shake Decay
+            if (state.screenShake > 0) state.screenShake -= dt * 30;
+            if (state.boss.shake > 0) state.boss.shake -= dt * 40;
 
 
             // --- RENDER ---
@@ -377,10 +450,17 @@ function renderGame(
     // Clear
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    ctx.save();
+    // Screen Shake
+    if (state.screenShake > 0) {
+        ctx.translate((Math.random() - 0.5) * state.screenShake, (Math.random() - 0.5) * state.screenShake);
+    }
+
     // Draw Boss
     if (state.boss.hp > 0) {
         ctx.save();
-        ctx.translate(state.boss.x, state.boss.y);
+        const bossShakeX = (Math.random() - 0.5) * state.boss.shake;
+        ctx.translate(state.boss.x + bossShakeX, state.boss.y);
 
         // Boss Health Bar
         ctx.fillStyle = "black";
@@ -437,6 +517,11 @@ function renderGame(
     if (state.hero.hp > 0) {
         ctx.save();
         ctx.translate(state.hero.x, state.hero.y);
+
+        // Invulnerability Flicker
+        if (state.hero.invulnerable > 0) {
+            ctx.globalAlpha = Math.sin(performance.now() / 30) > 0 ? 0.3 : 0.8;
+        }
 
         // Hero Walk Bobbing - use time instead of stateRef
         const breathe = Math.sin(performance.now() / 200) * 1;
@@ -541,6 +626,21 @@ function renderGame(
         ctx.fill();
         ctx.globalAlpha = 1;
     });
+
+    // Draw Damage Numbers
+    state.damageNumbers.forEach(dn => {
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, dn.life * 2);
+        ctx.fillStyle = dn.color;
+        ctx.font = `bold ${16 + (1 - dn.life) * 10}px Rajdhani`;
+        ctx.textAlign = "center";
+        ctx.shadowBlur = 5;
+        ctx.shadowColor = "rgba(0,0,0,0.5)";
+        ctx.fillText("-" + dn.value, dn.x, dn.y);
+        ctx.restore();
+    });
+
+    ctx.restore(); // Restore from Screen Shake
 
     // Game Over Text Overlay
     if (state.status !== "playing") {

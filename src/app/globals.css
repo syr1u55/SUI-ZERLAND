@@ -1,15 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #0a0a0a;
+  --background: #080810;
   --foreground: #ededed;
+  --neon-cyan: #00f5ff;
+  --neon-magenta: #ff00a8;
+  --neon-yellow: #ffd700;
+  --neon-purple: #a855f7;
+  --neon-green: #39ff14;
 }
 
 @theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: 'Rajdhani', sans-serif;
+  --font-mono: 'Orbitron', monospace;
 }
 
 @utility container {
@@ -25,16 +31,269 @@
   }
 }
 
-/* Custom Base Styles */
+/* ===========================
+   Custom Base Styles
+   =========================== */
 html,
 body {
   height: 100%;
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), sans-serif;
+  font-family: 'Rajdhani', sans-serif;
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  cursor: crosshair;
+}
+
+/* ===========================
+   Keyframe Animations
+   =========================== */
+
+/* Scanline CRT Effect */
+@keyframes scanlines {
+  0% {
+    background-position: 0 0;
+  }
+
+  100% {
+    background-position: 0 100px;
+  }
+}
+
+/* Neon glow pulse */
+@keyframes neon-pulse {
+
+  0%,
+  100% {
+    text-shadow: 0 0 4px currentColor, 0 0 12px currentColor, 0 0 24px currentColor;
+  }
+
+  50% {
+    text-shadow: 0 0 2px currentColor, 0 0 6px currentColor, 0 0 12px currentColor;
+  }
+}
+
+/* Glitch horizontal shift */
+@keyframes glitch {
+
+  0%,
+  92%,
+  100% {
+    transform: translate(0);
+    clip-path: none;
+  }
+
+  93% {
+    transform: translate(-3px, 0);
+    clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
+  }
+
+  95% {
+    transform: translate(3px, 0);
+    clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
+  }
+
+  97% {
+    transform: translate(-2px, 0);
+    clip-path: none;
+  }
+}
+
+/* Ticker scroll */
+@keyframes ticker-scroll {
+  0% {
+    transform: translateX(100%);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* Star twinkle */
+@keyframes twinkle {
+
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Key press effect */
+@keyframes key-press {
+  0% {
+    transform: translateY(0);
+    box-shadow: 0 4px 0 rgba(255, 255, 255, 0.2);
+  }
+
+  50% {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  100% {
+    transform: translateY(0);
+    box-shadow: 0 4px 0 rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* Neon border flicker */
+@keyframes neon-border-flicker {
+
+  0%,
+  95%,
+  100% {
+    opacity: 1;
+  }
+
+  96% {
+    opacity: 0.4;
+  }
+
+  98% {
+    opacity: 0.8;
+  }
+}
+
+/* Loading bar fill */
+@keyframes fill-bar {
+  0% {
+    width: 0%;
+  }
+
+  100% {
+    width: 100%;
+  }
+}
+
+/* Float up */
+@keyframes float-up {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-40px);
+    opacity: 0;
+  }
+}
+
+/* ===========================
+   Utility Classes
+   =========================== */
+
+.font-orbitron {
+  font-family: 'Orbitron', monospace;
+}
+
+.font-rajdhani {
+  font-family: 'Rajdhani', sans-serif;
+}
+
+/* Glow text */
+.glow-cyan {
+  text-shadow: 0 0 8px var(--neon-cyan), 0 0 20px var(--neon-cyan);
+  color: var(--neon-cyan);
+}
+
+.glow-magenta {
+  text-shadow: 0 0 8px var(--neon-magenta), 0 0 20px var(--neon-magenta);
+  color: var(--neon-magenta);
+}
+
+.glow-yellow {
+  text-shadow: 0 0 8px var(--neon-yellow), 0 0 20px var(--neon-yellow);
+  color: var(--neon-yellow);
+}
+
+.glow-purple {
+  text-shadow: 0 0 8px var(--neon-purple), 0 0 20px var(--neon-purple);
+  color: var(--neon-purple);
+}
+
+.glow-green {
+  text-shadow: 0 0 8px var(--neon-green), 0 0 20px var(--neon-green);
+  color: var(--neon-green);
+}
+
+/* Scanline overlay */
+.scanline-overlay::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.06) 2px,
+      rgba(0, 0, 0, 0.06) 4px);
+  pointer-events: none;
+  z-index: 9999;
+  animation: scanlines 8s linear infinite;
+}
+
+/* Neon bordered box */
+.neon-box-cyan {
+  border: 1px solid var(--neon-cyan);
+  box-shadow: 0 0 6px var(--neon-cyan), inset 0 0 6px rgba(0, 245, 255, 0.05);
+}
+
+.neon-box-purple {
+  border: 1px solid var(--neon-purple);
+  box-shadow: 0 0 6px var(--neon-purple), inset 0 0 6px rgba(168, 85, 247, 0.05);
+}
+
+/* Animated neon pulse text */
+.neon-pulse {
+  animation: neon-pulse 2s ease-in-out infinite;
+}
+
+/* Glitch text */
+.glitch-text {
+  animation: glitch 4s steps(1) infinite;
+}
+
+/* 3D key cap style */
+.key-cap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.4rem;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #2a2a3a 0%, #1a1a28 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-bottom: 3px solid rgba(0, 0, 0, 0.6);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  font-family: 'Orbitron', monospace;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.8);
+  transition: all 0.08s ease;
+  user-select: none;
+}
+
+.key-cap.pressed,
+.key-cap:active {
+  transform: translateY(2px);
+  border-bottom-width: 1px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.key-cap.active {
+  background: linear-gradient(180deg, #4a2a7a 0%, #2a1a4a 100%);
+  border-color: var(--neon-purple);
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.5), 0 4px 0 rgba(0, 0, 0, 0.5);
+  color: #e9d5ff;
 }
 
 @layer utilities {

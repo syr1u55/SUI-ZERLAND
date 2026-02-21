@@ -256,20 +256,30 @@ export function useBattleRoyaleEngine(canvasRef: React.RefObject<HTMLCanvasEleme
                         });
                     }
                 } else {
-                    // Human Player Control
-                    let dx = 0;
-                    let dy = 0;
-                    if (inputRef.current.w) dy -= 1;
-                    if (inputRef.current.s) dy += 1;
-                    if (inputRef.current.a) dx -= 1;
-                    if (inputRef.current.d) dx += 1;
+                    // Human Player Control (with Acceleration & Friction)
+                    const accel = 1800;
+                    const friction = 10;
+                    let ax = 0;
+                    let ay = 0;
+                    if (inputRef.current.w) ay -= 1;
+                    if (inputRef.current.s) ay += 1;
+                    if (inputRef.current.a) ax -= 1;
+                    if (inputRef.current.d) ax += 1;
 
-                    // Normalize
-                    if (dx !== 0 || dy !== 0) {
-                        const len = Math.sqrt(dx * dx + dy * dy);
-                        p.x += (dx / len) * speed * dt;
-                        p.y += (dy / len) * speed * dt;
+                    // Apply Acceleration
+                    if (ax !== 0 || ay !== 0) {
+                        const len = Math.sqrt(ax * ax + ay * ay);
+                        p.velocity.x += (ax / len) * accel * dt;
+                        p.velocity.y += (ay / len) * accel * dt;
                     }
+
+                    // Apply Friction
+                    p.velocity.x *= (1 - friction * dt);
+                    p.velocity.y *= (1 - friction * dt);
+
+                    // Update Position
+                    p.x += p.velocity.x * dt;
+                    p.y += p.velocity.y * dt;
 
                     // Player Shooting
                     if (inputRef.current.click) {
@@ -359,7 +369,7 @@ export function useBattleRoyaleEngine(canvasRef: React.RefObject<HTMLCanvasEleme
                         state.projectiles.splice(i, 1);
                         createExplosion(proj.x, proj.y, proj.color, 3);
 
-                        if (p.id === "me") state.cameraShake = 5;
+                        if (p.id === "me") state.cameraShake = 15;
 
                         if (p.hp <= 0) {
                             createExplosion(p.x, p.y, p.color, 20); // Big death explosion
@@ -408,28 +418,49 @@ export function useBattleRoyaleEngine(canvasRef: React.RefObject<HTMLCanvasEleme
                 const shakeX = (Math.random() - 0.5) * state.cameraShake;
                 const shakeY = (Math.random() - 0.5) * state.cameraShake;
 
-                // Clear
-                ctx.fillStyle = "#1a1a1a";
+                // 1. Clear & Background Texture
+                ctx.fillStyle = "#0a0a12";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
                 // Camera Transform
                 ctx.save();
                 ctx.translate(canvas.width / 2 - me.x + shakeX, canvas.height / 2 - me.y + shakeY);
 
-                // Draw Map Grid
-                ctx.strokeStyle = "#333";
-                ctx.lineWidth = 2;
+                // Draw Tech Map Grid
+                ctx.strokeStyle = "rgba(168, 85, 247, 0.05)";
+                ctx.lineWidth = 1;
                 ctx.beginPath();
-                for (let x = 0; x <= MAP_SIZE; x += 100) { ctx.moveTo(x, 0); ctx.lineTo(x, MAP_SIZE); }
-                for (let y = 0; y <= MAP_SIZE; y += 100) { ctx.moveTo(0, y); ctx.lineTo(MAP_SIZE, y); }
+                for (let x = 0; x <= MAP_SIZE; x += 50) { ctx.moveTo(x, 0); ctx.lineTo(x, MAP_SIZE); }
+                for (let y = 0; y <= MAP_SIZE; y += 50) { ctx.moveTo(0, y); ctx.lineTo(MAP_SIZE, y); }
                 ctx.stroke();
 
-                // Draw Zone
-                ctx.strokeStyle = "#ef4444";
-                ctx.lineWidth = 10 + Math.sin(time / 200) * 2; // Pulse
+                ctx.strokeStyle = "rgba(168, 85, 247, 0.15)";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                for (let x = 0; x <= MAP_SIZE; x += 200) { ctx.moveTo(x, 0); ctx.lineTo(x, MAP_SIZE); }
+                for (let y = 0; y <= MAP_SIZE; y += 200) { ctx.moveTo(0, y); ctx.lineTo(MAP_SIZE, y); }
+                ctx.stroke();
+
+                // Draw Zone (The Storm)
+                ctx.save();
+                ctx.strokeStyle = "#a855f7";
+                ctx.lineWidth = 15;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = "#a855f7";
                 ctx.beginPath();
                 ctx.arc(MAP_SIZE / 2, MAP_SIZE / 2, state.zoneRadius, 0, Math.PI * 2);
                 ctx.stroke();
+
+                // Advanced Storm Effect (Outer Ring)
+                ctx.lineWidth = 40;
+                ctx.strokeStyle = "rgba(168, 85, 247, 0.2)";
+                ctx.setLineDash([20, 30]);
+                ctx.lineDashOffset = -time / 50;
+                ctx.beginPath();
+                ctx.arc(MAP_SIZE / 2, MAP_SIZE / 2, state.zoneRadius + 20, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.restore();
                 // Zone Fog (outside) - Simple semi-transparent overlay just for visual indication
                 // (Complex to draw "inverse circle" easily in 2d context without composite ops, skipping for perf prototype)
 
