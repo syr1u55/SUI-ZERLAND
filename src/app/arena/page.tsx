@@ -7,6 +7,8 @@ import { MOCK_ASSETS, type HeroItemNFT, getRpgStats, getShooterStats } from "@/l
 import { cn } from "@/lib/utils";
 import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
 import { useArenaEngine } from "@/lib/arena-engine";
+import { useOwnedAssets } from "@/lib/hooks/use-assets";
+import { ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
 // ─── Pressed-key tracker ──────────────────────────────────────────────────────
@@ -42,9 +44,14 @@ function fireKey(key: string, type: "keydown" | "keyup") {
 
 export default function ArenaPage() {
     const account = useCurrentAccount();
+    const { assets } = useOwnedAssets();
     const [selectedGame, setSelectedGame] = useState<"RPG" | "SHOOTER">("RPG");
-    const [activeAsset, setActiveAsset] = useState<HeroItemNFT>(MOCK_ASSETS[0]);
+    const [activeAsset, setActiveAsset] = useState<HeroItemNFT>(assets[0]);
     const [showControls, setShowControls] = useState(false);
+
+    useEffect(() => {
+        if (!activeAsset && assets.length > 0) setActiveAsset(assets[0]);
+    }, [assets, activeAsset]);
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -281,7 +288,7 @@ export default function ArenaPage() {
                                 <Sparkles className="w-3 h-3 text-purple-500" /> Select Loadout
                             </h3>
                             <div className="space-y-3">
-                                {MOCK_ASSETS.map((asset) => {
+                                {assets.map((asset) => {
                                     const isActive = activeAsset.id === asset.id;
                                     return (
                                         <button
@@ -294,6 +301,12 @@ export default function ArenaPage() {
                                                     : "bg-black/40 border-white/5 hover:border-white/20 hover:bg-white/5"
                                             )}
                                         >
+                                            {asset.isVerified && (
+                                                <div className="absolute top-0 right-0 bg-blue-500/80 text-[8px] font-black px-1.5 py-0.5 rounded-bl font-orbitron flex items-center gap-1 z-10 backdrop-blur-sm">
+                                                    <ShieldCheck className="w-2.5 h-2.5" />
+                                                    ON-CHAIN
+                                                </div>
+                                            )}
                                             <div className={cn(
                                                 "absolute left-0 top-0 bottom-0 w-1 transition-all",
                                                 isActive ? "opacity-100" : "opacity-0 group-hover/item:opacity-50",
@@ -305,10 +318,12 @@ export default function ArenaPage() {
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex justify-between items-center mb-0.5">
-                                                    <h3 className={cn("font-orbitron font-bold text-sm truncate", isActive ? "text-white" : "text-white/70")}>
-                                                        {asset.name}
-                                                    </h3>
-                                                    {isActive && <div className="text-[10px] bg-purple-500 text-white px-1.5 py-0.5 rounded font-orbitron font-bold">EQUIPPED</div>}
+                                                    <div className="flex items-center gap-2 overflow-hidden">
+                                                        <h3 className={cn("font-orbitron font-bold text-sm truncate", isActive ? "text-white" : "text-white/70")}>
+                                                            {asset.name}
+                                                        </h3>
+                                                    </div>
+                                                    {isActive && <div className="text-[10px] bg-purple-500 text-white px-1.5 py-0.5 rounded font-orbitron font-bold shrink-0">EQUIPPED</div>}
                                                 </div>
                                                 <div className="flex items-center gap-3 text-[10px] font-orbitron text-white/40">
                                                     <span className={cn(

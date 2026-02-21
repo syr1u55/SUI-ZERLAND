@@ -22,13 +22,27 @@ export async function POST(req: Request) {
 
         console.log(`[PAYOUT REQUEST] Game: ${game}, Recipient: ${address}, Amount: ${amount}`);
 
+        /**
+         * ── PHASE 2 SECURITY ──────────────────────────────────────────
+         * In a production environment, you should add validation here:
+         * 1. Check if the user actually won (e.g., query a database or game logs).
+         * 2. Verify the amount matches the game rules.
+         * 3. Rate-limit payouts per address.
+         */
+        const isValidWin = true; // Placeholder for backend validation
+
+        if (!isValidWin) {
+            return NextResponse.json({ error: "Win validation failed" }, { status: 403 });
+        }
+
         // Placeholder for reward distribution logic
-        // Example: await distributeSui(address, amount);
+        // This is where you would call your Sui Wallet / KMS to execute a transfer
+        // e.g., const tx = await distributeSui(address, amount);
 
         return NextResponse.json({
             success: true,
-            message: "Payout request received and processed successfully.",
-            transactionId: "0x..." // Mock transaction hash
+            message: `Payout request for ${game} received and processed.`,
+            transactionId: "0x..." // Replace with actual on-chain TX hash
         });
     } catch (error: any) {
         console.error("Payout API Error:", error);

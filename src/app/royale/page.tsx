@@ -7,6 +7,8 @@ import { MOCK_ASSETS, type HeroItemNFT } from "@/lib/mock-data";
 import { useBattleRoyaleEngine } from "@/lib/game-engine";
 import { cn } from "@/lib/utils";
 import { ConnectButton, useCurrentAccount, useSignAndExecuteTransaction } from "@mysten/dapp-kit";
+import { useOwnedAssets } from "@/lib/hooks/use-assets";
+import { ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
 // ─── Kill Feed Names ──────────────────────────────────────────────────────────
@@ -33,8 +35,13 @@ const LB_PLAYERS = [
 ];
 
 export default function BattleRoyalePage() {
-    const [selectedAsset, setSelectedAsset] = useState<HeroItemNFT>(MOCK_ASSETS[0]);
+    const { assets } = useOwnedAssets();
+    const [selectedAsset, setSelectedAsset] = useState<HeroItemNFT>(assets[0]);
     const [username, setUsername] = useState("Commander");
+
+    useEffect(() => {
+        if (!selectedAsset && assets.length > 0) setSelectedAsset(assets[0]);
+    }, [assets, selectedAsset]);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const account = useCurrentAccount();
 
@@ -235,23 +242,29 @@ export default function BattleRoyalePage() {
 
                                 {/* Asset Selection */}
                                 <div className="grid grid-cols-3 gap-4 mb-6">
-                                    {MOCK_ASSETS.map((asset) => (
+                                    {assets.map((asset) => (
                                         <button
                                             key={asset.id}
                                             onClick={() => setSelectedAsset(asset)}
                                             className={cn(
-                                                "p-4 rounded-xl border transition-all text-left group",
+                                                "p-4 rounded-xl border transition-all text-left group relative overflow-hidden",
                                                 selectedAsset.id === asset.id
                                                     ? "bg-purple-900/25 border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.2)]"
                                                     : "bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/8"
                                             )}
                                         >
+                                            {asset.isVerified && (
+                                                <div className="absolute top-0 right-0 bg-blue-500 text-[8px] font-black px-1.5 py-0.5 rounded-bl font-orbitron flex items-center gap-1 z-10">
+                                                    <ShieldCheck className="w-2.5 h-2.5" />
+                                                    OWNED
+                                                </div>
+                                            )}
                                             <div className="text-4xl mb-3 group-hover:scale-110 transition-transform inline-block">{asset.image}</div>
                                             <div className="font-orbitron font-bold text-white text-sm mb-1">{asset.name.split("/")[0]}</div>
                                             <div className="text-xs font-orbitron text-white/40">ATK: {asset.attack}</div>
                                             <div className="mt-2 h-1 w-full bg-white/5 rounded-full overflow-hidden">
                                                 <div
-                                                    className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
+                                                    className="h-full bg-purple-500"
                                                     style={{ width: `${(asset.attack / 100) * 100}%` }}
                                                 />
                                             </div>

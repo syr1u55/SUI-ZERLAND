@@ -7,6 +7,10 @@ import Link from "next/link";
 import { ConnectButton, useCurrentAccount, useSignAndExecuteTransaction } from "@mysten/dapp-kit";
 import { Transaction } from "@mysten/sui/transactions";
 import { MIST_PER_SUI } from "@mysten/sui/utils";
+import { CONFIG } from "@/lib/config";
+import { useOwnedAssets } from "@/lib/hooks/use-assets";
+import { Sparkles, ShieldCheck } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 // ─── Track waypoints (normalized 0–1 coords, scaled at runtime) ───────────────
 const WAYPOINTS_NORM = [
@@ -75,6 +79,7 @@ export default function RacingPage() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const carsRef = useRef<Car[]>([]);
     const keysRef = useRef<Set<string>>(new Set());
+    const vkRef = useRef<Set<string>>(new Set());
     const rafRef = useRef<number>(0);
     const account = useCurrentAccount();
 
@@ -91,7 +96,12 @@ export default function RacingPage() {
 
     const { mutate: signAndExecute } = useSignAndExecuteTransaction();
 
-    const TREASURY_ADDRESS = "0x76b2f7034cf5fa2b87e224855476a6e76865d1d609bab5767b41e6c3af2c5d57";
+    const { assets } = useOwnedAssets();
+    const [activeAsset, setActiveAsset] = useState(assets[0]);
+
+    useEffect(() => {
+        if (!activeAsset && assets.length > 0) setActiveAsset(assets[0]);
+    }, [assets, activeAsset]);
 
     const claimReward = async () => {
         if (!account) return;
@@ -142,7 +152,7 @@ export default function RacingPage() {
         try {
             const txb = new Transaction();
             const [coin] = txb.splitCoins(txb.gas, [txb.pure.u64(Number(betAmount * Number(MIST_PER_SUI)))]);
-            txb.transferObjects([coin], txb.pure.address(TREASURY_ADDRESS));
+            txb.transferObjects([coin], txb.pure.address(CONFIG.TREASURY_ADDRESS));
 
             signAndExecute(
                 { transaction: txb },
@@ -579,9 +589,49 @@ export default function RacingPage() {
                         </motion.h1>
 
                         <motion.p initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.25 }}
-                            className="text-lg text-white/50 mb-10 font-rajdhani max-w-md">
+                            className="text-lg text-white/50 mb-6 font-rajdhani max-w-md">
                             Race 3 laps on the neon circuit. Beat the AI and claim your SUI reward.
                         </motion.p>
+
+                        {/* Asset Selector */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.28 }}
+                            className="w-full mb-10"
+                        >
+                            <div className="text-xs font-orbitron font-bold text-white/30 mb-3 uppercase tracking-widest text-left">Selected Vehicle Asset</div>
+                            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide py-2">
+                                {assets.map((asset) => (
+                                    <button
+                                        key={asset.id}
+                                        onClick={() => setActiveAsset(asset)}
+                                        className={cn(
+                                            "min-w-[140px] p-4 rounded-2xl border transition-all flex flex-col items-center gap-2 group relative",
+                                            activeAsset?.id === asset.id
+                                                ? "bg-pink-500/20 border-pink-400 shadow-[0_0_20px_rgba(255,0,168,0.2)]"
+                                                : "bg-white/5 border-white/10 hover:border-white/20"
+                                        )}
+                                    >
+                                        {asset.isVerified && (
+                                            <div className="absolute -top-2 -right-2 bg-blue-500 text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-lg z-10">
+                                                <ShieldCheck className="w-3 h-3 text-white" />
+                                                OWNED
+                                            </div>
+                                        )}
+                                        <div className="text-3xl mb-1 group-hover:scale-110 transition-transform">{asset.image}</div>
+                                        <div className="text-xs font-orbitron font-bold truncate w-full">{asset.name}</div>
+                                        <div className="flex gap-1">
+                                            {[...Array(3)].map((_, i) => (
+                                                <div key={i} className={cn("w-1 h-1 rounded-full",
+                                                    i < (asset.rarity === 'legendary' ? 3 : asset.rarity === 'rare' ? 2 : 1) ? "bg-pink-400 shadow-[0_0_5px_#ff00a8]" : "bg-white/20")}
+                                                />
+                                            ))}
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        </motion.div>
 
                         {/* Controls cheat sheet */}
                         <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}
