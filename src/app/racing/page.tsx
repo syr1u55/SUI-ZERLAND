@@ -691,7 +691,7 @@ export default function RacingPage() {
             )}
 
             {/* ── Finish Screen ─────────────────────────────────────────── */}
-            {gamePhase === "finish" && (
+            {gamePhase === "finished" && (
                 <div className="absolute inset-0 z-40 bg-black/95 flex flex-col items-center overflow-y-auto pt-24 pb-12">
                     <motion.div
                         initial={{ scale: 0.5, opacity: 0 }}

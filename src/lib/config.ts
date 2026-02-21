@@ -5,7 +5,7 @@
 export const CONFIG = {
     // The package ID where the HeroItem contract is deployed
     // Replace with actual deployed package ID
-    PACKAGE_ID: "0x0000000000000000000000000000000000000000000000000000000000000000",
+    PACKAGE_ID: "0x08d20ebb1faec19a1996f3d76d7dd133ff8d5c2c",
 
     // The treasury address that receives bets and distributes rewards
     TREASURY_ADDRESS: "0x76b2f7034cf5fa2b87e224855476a6e76865d1d609bab5767b41e6c3af2c5d57",
