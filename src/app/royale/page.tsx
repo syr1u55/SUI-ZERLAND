@@ -215,7 +215,7 @@ export default function BattleRoyalePage() {
 
                 {/* ── Lobby Overlay ──────────────────────────── */}
                 {gameState === "lobby" && (
-                    <div className="absolute inset-0 bg-black/85 backdrop-blur-sm z-20 flex flex-col items-center justify-center pointer-events-auto">
+                    <div className="absolute inset-0 bg-black/85 backdrop-blur-sm z-20 flex flex-col items-center overflow-y-auto pt-24 pb-12 pointer-events-auto">
                         <div className="flex gap-8 items-start">
 
                             {/* Main Lobby Card */}

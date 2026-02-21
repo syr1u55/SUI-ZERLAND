@@ -567,7 +567,7 @@ export default function RacingPage() {
 
             {/* ── Lobby Screen ─────────────────────────────────────────── */}
             {gamePhase === "lobby" && (
-                <div className="absolute inset-0 flex items-center justify-center z-30 bg-[#050510]">
+                <div className="absolute inset-0 z-30 bg-[#050510] overflow-y-auto pt-24 pb-12 flex flex-col items-center">
                     <div className="flex flex-col items-center text-center px-6 max-w-2xl">
                         <motion.div
                             initial={{ scale: 0.8, opacity: 0 }}
@@ -691,8 +691,8 @@ export default function RacingPage() {
             )}
 
             {/* ── Finish Screen ─────────────────────────────────────────── */}
-            {gamePhase === "finished" && (
-                <div className="absolute inset-0 z-40 bg-black/90 backdrop-blur-md flex items-center justify-center">
+            {gamePhase === "finish" && (
+                <div className="absolute inset-0 z-40 bg-black/95 flex flex-col items-center overflow-y-auto pt-24 pb-12">
                     <motion.div
                         initial={{ scale: 0.5, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
