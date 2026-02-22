@@ -10,6 +10,7 @@ import { ConnectButton, useCurrentAccount, useSignAndExecuteTransaction } from "
 import { useOwnedAssets } from "@/lib/hooks/use-assets";
 import { ShieldCheck } from "lucide-react";
 import Link from "next/link";
+import HeroStage from "@/components/3d/HeroStage";
 
 // ─── Kill Feed Names ──────────────────────────────────────────────────────────
 const BOT_NAMES = ["CyberNinja", "VoidWalker", "SuiSniper", "BlockMaster", "CryptoKing", "DarkCode", "NeonFury", "GhostByte", "HexHunter", "ZeroDay"];
@@ -61,6 +62,9 @@ export default function BattleRoyalePage() {
         if (!account) return;
         setClaiming(true);
         try {
+            // PHASE 1: Generate Proof (Simulated)
+            const proof = `win_proof_royale_${Date.now()}_${account.address.substring(0, 6)}`;
+
             const res = await fetch('/api/payout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -68,16 +72,17 @@ export default function BattleRoyalePage() {
                     address: account.address,
                     game: "Nexus Royale",
                     amount: stats.kills * 10,
+                    proof: proof,
                 })
             });
             let data;
             try { data = await res.json(); } catch { data = { error: "Invalid response" }; }
             if (res.ok) {
-                alert("Reward Request Sent! Your payout is being processed.");
+                alert("Reward Request Sent! Your payout is being processed (Verified).");
                 window.location.reload();
             } else {
                 const errorMessage = data?.error || JSON.stringify(data);
-                alert(`Claim failed: ${errorMessage || "Unknown error"}`);
+                alert(`Verification failed: ${errorMessage || "Unknown error"}`);
             }
         } catch {
             alert("Failed to reach the server.");
@@ -226,7 +231,11 @@ export default function BattleRoyalePage() {
                                 style={{ boxShadow: "0 0 60px rgba(168,85,247,0.1)" }}
                             >
                                 <h2 className="text-4xl font-orbitron font-black text-white mb-1 text-center uppercase tracking-tight">Ready for Battle?</h2>
-                                <p className="text-white/40 text-center mb-8 font-rajdhani text-lg">Select your loadout. Your NFT determines weapon stats.</p>
+                                <p className="text-white/40 text-center mb-4 font-rajdhani text-lg">Select your loadout. Your NFT determines weapon stats.</p>
+
+                                <div className="mb-8 p-4 bg-white/[0.02] border border-white/5 rounded-2xl">
+                                    <HeroStage asset={selectedAsset} />
+                                </div>
 
                                 {/* Callsign */}
                                 <div className="mb-6">

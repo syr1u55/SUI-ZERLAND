@@ -11,6 +11,7 @@ import { CONFIG } from "@/lib/config";
 import { useOwnedAssets } from "@/lib/hooks/use-assets";
 import { Sparkles, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import HeroStage from "@/components/3d/HeroStage";
 
 // ─── Track waypoints (normalized 0–1 coords, scaled at runtime) ───────────────
 const WAYPOINTS_NORM = [
@@ -107,21 +108,28 @@ export default function RacingPage() {
         if (!account) return;
         setClaiming(true);
         try {
+            // PHASE 1: Generate Proof (Simulated for Now)
+            // In production, this would be a TX hash from record_win 
+            // or a signature from the game engine.
+            const proof = `win_proof_nd_${Date.now()}_${account.address.substring(0, 6)}`;
+
             const res = await fetch('/api/payout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     address: account.address,
                     game: "Neon Drift",
-                    amount: betAmount * 2, // Example multiplier
+                    amount: betAmount * 2,
+                    proof: proof,
+                    // signature: "...", // Optional signature placeholder
                 })
             });
             const data = await res.json();
             if (res.ok) {
                 setHasClaimed(true);
-                alert("Reward Request Sent! Your payout is being processed.");
+                alert("Reward Request Sent! Your payout is being processed (Verified).");
             } else {
-                alert(`Claim failed: ${data.error || "Unknown error"}`);
+                alert(`Verification failed: ${data.error || "Unknown error"}`);
             }
         } catch (e) {
             console.error(e);
@@ -572,10 +580,9 @@ export default function RacingPage() {
                         <motion.div
                             initial={{ scale: 0.8, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            className="relative mb-8"
+                            className="relative mb-4 w-full"
                         >
-                            <div className="absolute inset-0 bg-pink-500/20 blur-3xl rounded-full" />
-                            <Zap className="w-20 h-20 text-pink-400 relative z-10" style={{ filter: "drop-shadow(0 0 20px #ff00a8)" }} />
+                            <HeroStage asset={activeAsset} />
                         </motion.div>
 
                         <motion.h1

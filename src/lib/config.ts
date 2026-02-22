@@ -10,8 +10,11 @@ export const CONFIG = {
     // The treasury address that receives bets and distributes rewards
     TREASURY_ADDRESS: "0x76b2f7034cf5fa2b87e224855476a6e76865d1d609bab5767b41e6c3af2c5d57",
 
+    // The registry ID for authorized game engines
+    REGISTRY_ID: "0x...", // Replace with actual registry object ID after deployment
+
     // Default network settings
-    NETWORK: "mainnet",
+    NETWORK: "testnet",
 
     // Payout constants
     PAYOUT_MULTIPLIER: 2.0,

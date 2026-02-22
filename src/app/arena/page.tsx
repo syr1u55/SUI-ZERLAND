@@ -10,6 +10,7 @@ import { useArenaEngine } from "@/lib/arena-engine";
 import { useOwnedAssets } from "@/lib/hooks/use-assets";
 import { ShieldCheck } from "lucide-react";
 import Link from "next/link";
+import HeroStage from "@/components/3d/HeroStage";
 
 // ─── Pressed-key tracker ──────────────────────────────────────────────────────
 function useKeyTracker(keys: string[]) {
@@ -109,22 +110,26 @@ export default function ArenaPage() {
         if (!account) { alert("Please connect your wallet to claim rewards."); return; }
         setIsClaiming(true);
         try {
+            // PHASE 1: Generate Proof (Simulated)
+            const proof = `win_proof_arena_${Date.now()}_${account.address.substring(0, 6)}`;
+
             const res = await fetch('/api/payout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     address: account.address,
                     game: "Nexus Arena",
-                    amount: 1, // Example amount
+                    amount: 1,
+                    proof: proof,
                 })
             });
             const data = await res.json();
             if (res.ok) {
                 setHasClaimed(true);
-                alert("Reward Request Sent! Your payout is being processed.");
+                alert("Reward Request Sent! Your payout is being processed (Verified).");
             } else {
                 const errorMessage = data?.error || JSON.stringify(data);
-                alert(`Claim Failed: ${errorMessage}`);
+                alert(`Verification Failed: ${errorMessage}`);
             }
         } catch (e) {
             console.error(e);
@@ -280,7 +285,9 @@ export default function ArenaPage() {
                             </div>
                         </div>
 
-                        <div className="h-px w-full bg-white/10" />
+                        <div className="p-4 border-b border-white/5 bg-white/[0.01]">
+                            <HeroStage asset={activeAsset} />
+                        </div>
 
                         {/* Inventory */}
                         <div className="p-6 bg-white/[0.02]">

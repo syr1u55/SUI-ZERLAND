@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Gamepad2, Sword, Swords, Coins, ShieldCheck, ArrowRight, Layers, Repeat, Zap, Users, Crosshair, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ConnectButton } from "@mysten/dapp-kit";
+import NeonGrid from "@/components/3d/NeonGrid";
 
 export default function Home() {
   const [stars, setStars] = useState<{ id: number; x: number; y: number; size: number; delay: number; duration: number }[]>([]);
@@ -25,7 +26,10 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#080810] text-white selection:bg-purple-500/30 overflow-x-hidden scanline-overlay">
 
-      {/* ── Star Field ─────────────────────────────────────────────── */}
+      {/* ── 3D Neon Grid Background ──────────────────────────────── */}
+      <NeonGrid />
+
+      {/* ── Star Field (Overlay) ──────────────────────────────────── */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden text-white/0">
         {stars.map((s) => (
           <span

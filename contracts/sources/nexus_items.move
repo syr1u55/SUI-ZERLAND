@@ -7,6 +7,7 @@ module nexus_game::hero_items {
     use sui::tx_context::{Self, TxContext};
     use sui::package;
     use sui::display;
+    use std::vector;
 
     /// An NFT that represents a game asset in the Nexus Ecosystem
     struct HeroItem has key, store {
@@ -31,6 +32,19 @@ module nexus_game::hero_items {
         id: ID,
         creator: address,
         name: String,
+    }
+
+    struct WinRecorded has copy, drop {
+        item_id: ID,
+        game: String,
+        timestamp: u64,
+    }
+
+    /// Registry to store authorized game addresses (controlled by contract owner)
+    struct GameRegistry has key {
+        id: UID,
+        admin: address,
+        authorized_engines: vector<address>,
     }
 
     fun init(otw: HERO_ITEMS, ctx: &mut TxContext) {
@@ -59,8 +73,48 @@ module nexus_game::hero_items {
 
         display::update_version(&mut display);
 
+        // Initialize Game Registry
+        let registry = GameRegistry {
+            id: object::new(ctx),
+            admin: tx_context::sender(ctx),
+            authorized_engines: vector[tx_context::sender(ctx)], // Owner is authorized by default
+        };
+
+        transfer::share_object(registry);
         transfer::public_transfer(publisher, tx_context::sender(ctx));
         transfer::public_transfer(display, tx_context::sender(ctx));
+    }
+
+    /// Add a game engine address to the registry
+    public entry fun authorize_engine(
+        registry: &mut GameRegistry,
+        engine: address,
+        ctx: &mut TxContext
+    ) {
+        assert!(tx_context::sender(ctx) == registry.admin, 0);
+        vector::push_back(&mut registry.authorized_engines, engine);
+    }
+
+    /// Record a win for a specific item (only callable by authorized engines)
+    public entry fun record_win(
+        registry: &GameRegistry,
+        item: &mut HeroItem,
+        game_name: vector<u8>,
+        timestamp: u64,
+        ctx: &mut TxContext
+    ) {
+        let sender = tx_context::sender(ctx);
+        let (found, _) = vector::index_of(&registry.authorized_engines, &sender);
+        assert!(found, 1);
+
+        // Optionally update item metadata (e.g. increase attack by a small amount)
+        item.attack = item.attack + 1;
+
+        event::emit(WinRecorded {
+            item_id: object::uid_to_inner(&item.id),
+            game: string::utf8(game_name),
+            timestamp,
+        });
     }
 
     /// Public function to mint a new Item

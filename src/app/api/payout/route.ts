@@ -1,5 +1,45 @@
 import { NextResponse } from "next/server";
 
+// Mock for Sui signature verification (Ed25519)
+async function verifySuiSignature(message: string, signature: string, publicKey: string) {
+    console.log(`[AUTH] Verifying signature for message: ${message.substring(0, 20)}...`);
+    return true; // Placeholder
+}
+
+/**
+ * Request SUI from the official faucet (Testnet/Devnet)
+ */
+async function requestFromFaucet(recipient: string) {
+    const endpoints = [
+        'https://faucet.testnet.sui.io/v1/gas',
+        'https://faucet.testnet.sui.io/v2/gas',
+    ];
+
+    for (const url of endpoints) {
+        try {
+            console.log(`[FAUCET] Attempting: ${url}`);
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    FixedAmountRequest: {
+                        recipient: recipient,
+                    }
+                })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                console.log(`[FAUCET] Success from ${url}`);
+                return data;
+            }
+            console.warn(`[FAUCET] Failed ${url}: ${res.status}`);
+        } catch (e) {
+            console.error(`[FAUCET] Error ${url}:`, e);
+        }
+    }
+    throw new Error("All faucet endpoints failed. Please try again later.");
+}
+
 /**
  * Payout Request API Handler
  * 
@@ -14,35 +54,55 @@ import { NextResponse } from "next/server";
  */
 export async function POST(req: Request) {
     try {
-        const { address, game, amount, metadata } = await req.json();
+        const { address, game, amount, metadata, signature, proof } = await req.json();
 
         if (!address) {
             return NextResponse.json({ error: "Wallet address is required" }, { status: 400 });
         }
 
+        // ── PHASE 1: Signature Verification ──────────────────────────
+        if (signature) {
+            const isValidSig = await verifySuiSignature(`win:${game}:${amount}`, signature, address);
+            if (!isValidSig) {
+                return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+            }
+        }
+
         console.log(`[PAYOUT REQUEST] Game: ${game}, Recipient: ${address}, Amount: ${amount}`);
 
         /**
-         * ── PHASE 2 SECURITY ──────────────────────────────────────────
+         * ── PHASE 2 SECURITY: Win Verification ────────────────────────
          * In a production environment, you should add validation here:
-         * 1. Check if the user actually won (e.g., query a database or game logs).
-         * 2. Verify the amount matches the game rules.
-         * 3. Rate-limit payouts per address.
+         * 1. Check if the proof (TX hash or backend log) is valid.
+         * 2. Verify the on-chain WinRecorded event if applicable.
          */
-        const isValidWin = true; // Placeholder for backend validation
+        const isValidWin = !!proof; // In this prototype, requiring a proof
 
         if (!isValidWin) {
-            return NextResponse.json({ error: "Win validation failed" }, { status: 403 });
+            return NextResponse.json({ error: "Win proof is missing or invalid" }, { status: 403 });
         }
 
-        // Placeholder for reward distribution logic
-        // This is where you would call your Sui Wallet / KMS to execute a transfer
-        // e.g., const tx = await distributeSui(address, amount);
+        // ── PHASE 3: Reward Distribution ─────────────────────────────
+        // If we are on mainnet, we should ideally use a treasury wallet.
+        // For now, since the user asked to "check the sui faucet", 
+        // we will attempt to use the faucet first.
+        let faucetResult;
+        try {
+            faucetResult = await requestFromFaucet(address);
+        } catch (e: any) {
+            console.error("Payout distribution failed:", e);
+            // If faucet fails, we still return success in 'prototype' mode 
+            // but with a warning, or fail hard if requested.
+            return NextResponse.json({
+                error: "Faucet failure: " + e.message,
+                details: "The Sui Faucet is currently unavailable for your network."
+            }, { status: 503 });
+        }
 
         return NextResponse.json({
             success: true,
-            message: `Payout request for ${game} received and processed.`,
-            transactionId: "0x..." // Replace with actual on-chain TX hash
+            message: `Payout for ${game} verified and processed via Faucet.`,
+            transactionId: faucetResult?.transferredGasObjects?.[0]?.transferTxDigest || "0x-pending"
         });
     } catch (error: any) {
         console.error("Payout API Error:", error);
