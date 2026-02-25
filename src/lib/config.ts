@@ -1,5 +1,5 @@
 /**
- * Nexus Ecosystem - Mainnet Configuration
+ * SUI-ZERLAND Ecosystem - Mainnet Configuration
  */
 
 export const CONFIG = {

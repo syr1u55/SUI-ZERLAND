@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Nexus Gaming | The Future of Digital Ownership",
+  title: "SUI-ZERLAND Gaming | The Future of Digital Ownership",
   description: "Cross-game assets, true ownership, and a player-driven economy.",
 };
 

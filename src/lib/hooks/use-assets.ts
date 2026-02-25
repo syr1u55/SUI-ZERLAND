@@ -43,7 +43,7 @@ export function useOwnedAssets() {
                 return {
                     id: obj.data?.objectId,
                     name: fields?.name || "Unknown Item",
-                    description: fields?.description || "An on-chain Nexus Item",
+                    description: fields?.description || "An on-chain SUI-ZERLAND Item",
                     image: obj.data?.display?.data?.image_url || "📦",
                     rarity: (fields?.rarity?.toLowerCase() as any) || "common",
                     attack: Number(fields?.attack) || 0,

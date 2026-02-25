@@ -55,7 +55,7 @@ export default function Home() {
         <div className="flex items-center gap-2 font-orbitron font-black text-xl tracking-tighter">
           <Gamepad2 className="w-6 h-6 text-purple-400" />
           <span>
-            NEXUS<span className="text-purple-400" style={{ textShadow: "0 0 12px #a855f7" }}>GAMES</span>
+            SUI-ZERLAND<span className="text-purple-400" style={{ textShadow: "0 0 12px #a855f7" }}>GAMES</span>
           </span>
         </div>
 
@@ -110,7 +110,7 @@ export default function Home() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-lg md:text-xl text-white/60 max-w-2xl mb-12 leading-relaxed font-rajdhani font-medium"
           >
-            Stop renting your achievements. In the Nexus ecosystem, every sword, skin, and achievement is a verifiably owned asset that lives on the blockchain — forever yours to trade, sell, or take to the next game.
+            Stop renting your achievements. In the SUI-ZERLAND ecosystem, every sword, skin, and achievement is a verifiably owned asset that lives on the blockchain — forever yours to trade, sell, or take to the next game.
           </motion.p>
 
           {/* CTA Buttons */}
@@ -206,7 +206,7 @@ export default function Home() {
                 <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center mb-6 text-green-500">
                   <ShieldCheck className="w-6 h-6" />
                 </div>
-                <h3 className="text-2xl font-orbitron font-bold mb-4 text-green-400">The Nexus Model</h3>
+                <h3 className="text-2xl font-orbitron font-bold mb-4 text-green-400">The SUI-ZERLAND Model</h3>
                 <ul className="space-y-4 text-white/80 font-rajdhani text-lg">
                   <li className="flex items-start gap-3"><ShieldCheck className="w-5 h-5 text-green-500 shrink-0 mt-0.5" /><span>True ownership via NFTs on Sui</span></li>
                   <li className="flex items-start gap-3"><Repeat className="w-5 h-5 text-green-500 shrink-0 mt-0.5" /><span>Interoperable assets across games</span></li>
@@ -256,7 +256,7 @@ export default function Home() {
           </div>
           <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             <ControlCard
-              game="NEXUS ARENA"
+              game="SUI-ZERLAND ARENA"
               color="purple"
               controls={[
                 { keys: ["W", "A", "S", "D"], label: "Move" },
@@ -265,7 +265,7 @@ export default function Home() {
               ]}
             />
             <ControlCard
-              game="NEXUS ROYALE"
+              game="SUI-ZERLAND ROYALE"
               color="blue"
               controls={[
                 { keys: ["W", "A", "S", "D"], label: "Move" },
@@ -290,9 +290,9 @@ export default function Home() {
           <div className="container flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-2 font-orbitron font-bold text-lg">
               <Gamepad2 className="w-5 h-5 text-purple-400" />
-              <span>NEXUS<span className="text-purple-400">GAMES</span></span>
+              <span>SUI-ZERLAND<span className="text-purple-400">GAMES</span></span>
             </div>
-            <p className="text-sm text-white/40 font-rajdhani">© 2026 Nexus Gaming Protocol. All rights reserved.</p>
+            <p className="text-sm text-white/40 font-rajdhani">© 2026 SUI-ZERLAND Gaming Protocol. All rights reserved.</p>
           </div>
         </footer>
       </main>

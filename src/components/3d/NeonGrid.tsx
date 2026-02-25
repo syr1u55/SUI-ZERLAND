@@ -7,30 +7,24 @@ import * as THREE from "three";
 function GridHelper() {
     const gridRef = useRef<THREE.Group>(null);
 
-    // Create grid lines
-    const lines = useMemo(() => {
+    // Create grid geometry imperatively to avoid JSX type issues in R3F/React 19
+    const geometry = useMemo(() => {
         const size = 100;
         const step = 2;
         const lineCoords = [];
 
-        // Horizontal lines
         for (let i = -size; i <= size; i += step) {
-            lineCoords.push(new THREE.Vector3(-size, 0, i));
-            lineCoords.push(new THREE.Vector3(size, 0, i));
+            lineCoords.push(-size, 0, i, size, 0, i);
+            lineCoords.push(i, 0, -size, i, 0, size);
         }
 
-        // Vertical lines
-        for (let i = -size; i <= size; i += step) {
-            lineCoords.push(new THREE.Vector3(i, 0, -size));
-            lineCoords.push(new THREE.Vector3(i, 0, size));
-        }
-
-        return lineCoords;
+        const g = new THREE.BufferGeometry();
+        g.setAttribute('position', new THREE.Float32BufferAttribute(lineCoords, 3));
+        return g;
     }, []);
 
     useFrame((state, delta) => {
         if (gridRef.current) {
-            // Infinite scroll effect by modulo shifting the grid
             gridRef.current.position.z += delta * 15;
             if (gridRef.current.position.z >= 2) {
                 gridRef.current.position.z = 0;
@@ -40,15 +34,7 @@ function GridHelper() {
 
     return (
         <group ref={gridRef}>
-            <lineSegments>
-                <bufferGeometry attach="geometry">
-                    <bufferAttribute
-                        attach="attributes-position"
-                        array={new Float32Array(lines.flatMap(v => [v.x, v.y, v.z]))}
-                        count={lines.length}
-                        itemSize={3}
-                    />
-                </bufferGeometry>
+            <lineSegments geometry={geometry}>
                 <lineBasicMaterial attach="material" color="#ff00a8" transparent opacity={0.3} />
             </lineSegments>
         </group>

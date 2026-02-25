@@ -1,7 +1,7 @@
-# Nexus Games: Gaming on the Sui Blockchain
+# SUI-ZERLAND Games: Gaming on the Sui Blockchain
 
 ## Overview
-Nexus Games is a next-generation decentralized gaming platform built on the **Sui Blockchain**. It demonstrates the power of "True Digital Ownership" and "Cross-Game Interoperability" by using on-chain assets that evolve based on gameplay.
+SUI-ZERLAND Games is a next-generation decentralized gaming platform built on the **Sui Blockchain**. It demonstrates the power of "True Digital Ownership" and "Cross-Game Interoperability" by using on-chain assets that evolve based on gameplay.
 
 The platform currently features three distinct game modes:
 1.  **Arena (Battle)**: A turn-based combat simulator where stats determine the victor.
@@ -15,9 +15,9 @@ The platform currently features three distinct game modes:
 This project goes beyond simple "token gating". We utilize Sui's unique object-oriented data model to create **dynamic, evolving assets**.
 
 ### 1. True Digital Ownership (Dynamic NFTs)
-In traditional games, your "Sword of Power" is just a row in a centralized database. In Nexus, game items are **Sui Objects** (NFTs) that you truly own in your wallet.
+In traditional games, your "Sword of Power" is just a row in a centralized database. In SUI-ZERLAND, game items are **Sui Objects** (NFTs) that you truly own in your wallet.
 
-**Smart Contract Architecture (`nexus_items.move`)**:
+**Smart Contract Architecture (`sui_zerland_items.move`)**:
 The core of our on-chain logic is the `HeroItem` struct:
 
 ```move
@@ -38,7 +38,7 @@ struct HeroItem has key, store {
 ### 2. Cross-Game Interoperability
 A key architectural decision in our Move contract is **Universal Stat Interpretation**:
 
-> *From `nexus_items.move`:*
+> *From `sui_zerland_items.move`:*
 > "Shooter Stats (interpreted from the same base stats) ... Not stored separately to enforce 'Cross-Game' logic"
 
 This means the same NFT works differently in every game mode:
@@ -69,7 +69,7 @@ This updates the metadata view dynamically without needing to change the underly
 ## Technical Stack
 
 ### Smart Contracts (Sui Move)
-*   **Location**: `contracts/sources/nexus_items.move`
+*   **Location**: `contracts/sources/sui_zerland_items.move`
 *   **Key Features**:
     *   `init`: Sets up the Publisher and Display objects.
     *   `mint`: Creates new game items with randomized stats.

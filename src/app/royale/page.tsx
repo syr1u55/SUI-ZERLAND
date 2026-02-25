@@ -70,7 +70,7 @@ export default function BattleRoyalePage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     address: account.address,
-                    game: "Nexus Royale",
+                    game: "SUI-ZERLAND Royale",
                     amount: stats.kills * 10,
                     proof: proof,
                 })
@@ -134,7 +134,7 @@ export default function BattleRoyalePage() {
                                 <ArrowLeft className="w-4 h-4" />
                             </Link>
                             <h1 className="font-orbitron font-black text-lg italic tracking-tighter">
-                                NEXUS<span className="text-purple-400" style={{ textShadow: "0 0 10px #a855f7" }}>ROYALE</span>
+                                SUI-ZERLAND<span className="text-purple-400" style={{ textShadow: "0 0 10px #a855f7" }}>ROYALE</span>
                             </h1>
                         </div>
                         <div className="flex gap-4 text-sm font-orbitron text-white/70">

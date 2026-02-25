@@ -70,7 +70,7 @@ export default function ArenaPage() {
 
     // ── Load stats ──
     useEffect(() => {
-        const stored = localStorage.getItem("nexus_arena_stats");
+        const stored = localStorage.getItem("sui_zerland_arena_stats");
         if (stored) setStats(JSON.parse(stored));
     }, []);
 
@@ -83,7 +83,7 @@ export default function ArenaPage() {
         else if (gameState === "defeat") { newStats.losses += 1; updated = true; }
         if (updated) {
             setStats(newStats);
-            localStorage.setItem("nexus_arena_stats", JSON.stringify(newStats));
+            localStorage.setItem("sui_zerland_arena_stats", JSON.stringify(newStats));
         }
         lastProcessedState.current = gameState;
     }, [gameState, stats]);
@@ -118,7 +118,7 @@ export default function ArenaPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     address: account.address,
-                    game: "Nexus Arena",
+                    game: "SUI-ZERLAND Arena",
                     amount: 1,
                     proof: proof,
                 })
@@ -167,7 +167,7 @@ export default function ArenaPage() {
                         </Link>
                         <div className="flex items-center gap-2 font-orbitron font-bold tracking-tight">
                             <Swords className="w-5 h-5 text-purple-400" />
-                            <span>NEXUS<span className="text-purple-400" style={{ textShadow: "0 0 10px #a855f7" }}>ARENA</span></span>
+                            <span>SUI-ZERLAND<span className="text-purple-400" style={{ textShadow: "0 0 10px #a855f7" }}>ARENA</span></span>
                         </div>
                     </div>
 

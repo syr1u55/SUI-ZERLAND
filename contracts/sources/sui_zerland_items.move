@@ -1,4 +1,4 @@
-module nexus_game::hero_items {
+module sui_zerland_game::hero_items {
     use std::string::{Self, String};
     use sui::url::{Self, Url};
     use sui::object::{Self, ID, UID};
@@ -9,7 +9,7 @@ module nexus_game::hero_items {
     use sui::display;
     use std::vector;
 
-    /// An NFT that represents a game asset in the Nexus Ecosystem
+    /// An NFT that represents a game asset in the SUI-ZERLAND Ecosystem
     struct HeroItem has key, store {
         id: UID,
         name: String,
@@ -59,11 +59,11 @@ module nexus_game::hero_items {
 
         let values = vector[
             string::utf8(b"{name}"),
-            string::utf8(b"https://nexus.game/item/{id}"),
+            string::utf8(b"https://sui-zerland.game/item/{id}"),
             string::utf8(b"{url}"),
             string::utf8(b"{description}"),
-            string::utf8(b"https://nexus.game"),
-            string::utf8(b"Nexus Games"),
+            string::utf8(b"https://sui-zerland.game"),
+            string::utf8(b"SUI-ZERLAND Games"),
         ];
 
         let publisher = package::claim(otw, ctx);
